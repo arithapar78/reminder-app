@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reminder App</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function() {
+          emailjs.init("6wEKAcx5or06_P-iW"); // Your EmailJS public key
+       })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- App Header -->
+        <div class="app-header">
+            <div class="logo">
+                <span class="logo-icon">⏰</span>
+                <h1>My Reminders</h1>
+            </div>
+        </div>
+        
+        <!-- Email Notifications Section (initially at top) -->
+        <div class="panel" id="emailSettings">
+            <h2>Email Notifications</h2>
+            <p>Enter your email address to receive reminder notifications:</p>
+            
+            <div class="form-group">
+                <label for="userEmail">Your Email:</label>
+                <input type="email" id="userEmail" required placeholder="your.email@example.com">
+            </div>
+            <button id="saveEmailBtn" class="btn btn-primary">Save Email</button>
+            <p id="emailStatus" class="message"></p>
+        </div>
+        
+        <!-- Today's Reminders Section -->
+        <div class="panel" id="remindersContainer">
+            <h2>Today's Reminders</h2>
+            <div id="remindersList"></div>
+        </div>
+        
+        <!-- Add Reminder Section -->
+        <div class="panel" id="reminderForm">
+            <h2>Add New Reminder</h2>
+            <form>
+                <div class="form-group">
+                    <label for="reminderText">Reminder:</label>
+                    <input type="text" id="reminderText" required placeholder="What do you need to remember?">
+                </div>
+                <div class="form-group">
+                    <label for="reminderTime">Time:</label>
+                    <input type="time" id="reminderTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="reminderMessage">Message (optional):</label>
+                    <textarea id="reminderMessage" placeholder="Add any additional details here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Add Reminder</button>
+            </form>
+        </div>
+        
+        <!-- Reset App Data Button -->
+        <div class="panel" id="resetPanel">
+            <h2>Reset App Data</h2>
+            <p>Warning: This will clear all saved reminders and email settings.</p>
+            <button id="resetAppBtn" class="btn btn-danger">Reset All Data</button>
+        </div>
+    </div>
+
+    <!-- Notification Element (hidden initially) -->
+    <div id="notification" class="notification" style="display: none;">
+        <span id="notificationMessage"></span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
