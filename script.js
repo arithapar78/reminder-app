@@ -57,6 +57,58 @@ function setupLayoutToggle() {
     }
 }
 
+// Function to move email section to the bottom
+function moveEmailSectionToBottom() {
+    const container = document.querySelector('.container');
+    const emailSettings = document.getElementById('emailSettings');
+    const resetPanel = document.getElementById('resetPanel');
+    
+    if (emailSettings && container && resetPanel) {
+        // Add moving class for transition effect
+        emailSettings.classList.add('moving');
+        
+        // Use setTimeout to allow transition to start before removing
+        setTimeout(() => {
+            // Remove the email settings from its current position
+            emailSettings.remove();
+            
+            // Add it back at the end (before reset panel)
+            container.insertBefore(emailSettings, resetPanel);
+            
+            // Remove moving class to fade it back in
+            setTimeout(() => {
+                emailSettings.classList.remove('moving');
+            }, 50);
+        }, 300);
+    }
+}
+
+// Function to move email section to the top
+function moveEmailSectionToTop() {
+    const container = document.querySelector('.container');
+    const emailSettings = document.getElementById('emailSettings');
+    const statsPanel = document.getElementById('statsPanel');
+    
+    if (emailSettings && container && statsPanel) {
+        // Add moving class for transition effect
+        emailSettings.classList.add('moving');
+        
+        // Use setTimeout to allow transition to start before removing
+        setTimeout(() => {
+            // Remove the email settings from its current position
+            emailSettings.remove();
+            
+            // Add it back at the top (before stats panel)
+            container.insertBefore(emailSettings, statsPanel);
+            
+            // Remove moving class to fade it back in
+            setTimeout(() => {
+                emailSettings.classList.remove('moving');
+            }, 50);
+        }, 300);
+    }
+}
+
 // Function to display the detected timezone
 function displayTimeZone() {
     const timezoneDisplay = document.getElementById('timezoneDisplay');
@@ -690,6 +742,9 @@ document.addEventListener('DOMContentLoaded', function() {
         userEmailInput.value = localStorage.getItem('userEmail');
         emailStatus.textContent = `Notifications will be sent to: ${localStorage.getItem('userEmail')}`;
         emailStatus.className = 'success-message';
+        
+        // Move email section to bottom if email is set
+        moveEmailSectionToBottom();
     }
     
     // Save email button click
@@ -710,10 +765,8 @@ document.addEventListener('DOMContentLoaded', function() {
             emailStatus.textContent = `Notifications will be sent to: ${email}`;
             emailStatus.className = 'success-message';
             
-            // Move email settings to bottom (if implemented)
-            if (typeof moveEmailSectionToBottom === 'function') {
-                moveEmailSectionToBottom();
-            }
+            // Move email settings to bottom
+            moveEmailSectionToBottom();
             
             // Send a test email
             sendTestEmail(email);
@@ -767,6 +820,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     mobileView: window.innerWidth < 768,
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 };
+                
+                // Move email section back to top
+                moveEmailSectionToTop();
                 
                 // Show notification before reload
                 showNotification('App data has been reset successfully', 'warning');
@@ -839,4 +895,3 @@ function showNotification(message, type = 'success') {
     setTimeout(() => {
         notification.style.display = 'none';
     }, 4000);
-}
