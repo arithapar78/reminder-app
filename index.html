@@ -1,20 +1,16 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Reminder App</title>
+    <title>My Reminders</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- EmailJS SDK -->
+    <!-- EmailJS SDK for sending emails -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
-       (function() {
-          emailjs.init("6wEKAcx5or06_P-iW"); // Your EmailJS public key
-       })();
+        // Initialize EmailJS with your public key
+        (function() {
+            emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual EmailJS public key
+        })();
     </script>
 </head>
 <body>
@@ -25,74 +21,92 @@
                 <span class="logo-icon">⏰</span>
                 <h1>My Reminders</h1>
             </div>
-            
             <div class="app-controls">
-                <button id="layoutToggleBtn" class="btn btn-secondary">Switch to Mobile View</button>
                 <div id="timezoneDisplay" class="timezone-display"></div>
+                <button id="layoutToggleBtn" class="btn btn-secondary"></button>
             </div>
         </div>
         
-        <!-- Date Filter & Stats -->
-        <div class="panel" id="filterPanel">
-            <div class="filter-row">
+        <!-- Stats Panel -->
+        <div id="statsPanel" class="panel">
+            <div class="reminder-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Today:</span>
+                    <span id="todayCount" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Upcoming:</span>
+                    <span id="upcomingCount" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total:</span>
+                    <span id="totalCount" class="stat-value">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Settings Panel -->
+        <div id="emailSettings" class="panel">
+            <h2>Email Notifications</h2>
+            <div class="form-group">
+                <label for="userEmail">Enter your email address to receive reminder notifications:</label>
+                <input type="email" id="userEmail" placeholder="your@email.com">
+                <button id="saveEmailBtn" class="btn btn-primary">Save Email & Send Test</button>
+                <div id="emailStatus" class="message"></div>
+            </div>
+        </div>
+        
+        <!-- Reminders Panel -->
+        <div id="remindersContainer" class="panel">
+            <h2>View Reminders</h2>
+            
+            <!-- Date filter -->
+            <div class="filter-section">
                 <div class="filter-group">
-                    <label for="filterDate">View reminders for:</label>
+                    <label for="filterDate">For:</label>
                     <input type="date" id="filterDate" class="date-input">
                 </div>
-                
-                <div class="reminder-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Today:</span>
-                        <span id="todayCount" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Upcoming:</span>
-                        <span id="upcomingCount" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Total:</span>
-                        <span id="totalCount" class="stat-value">0</span>
-                    </div>
+                <div class="data-controls">
+                    <button id="exportBtn" class="btn btn-secondary">Export Data</button>
+                    <button id="importBtn" class="btn btn-secondary">Import Data</button>
                 </div>
             </div>
             
-            <div class="data-controls">
-                <button id="exportBtn" class="btn btn-secondary">Export Data</button>
-                <button id="importBtn" class="btn btn-secondary">Import Data</button>
+            <!-- Reminders list -->
+            <div id="remindersList">
+                <!-- Reminders will be added here dynamically -->
             </div>
         </div>
         
-        <!-- Today's Reminders Section -->
-        <div class="panel" id="remindersContainer">
-            <h2>Reminders</h2>
-            <div id="remindersList"></div>
-        </div>
-        
-        <!-- Add Reminder Section -->
-        <div class="panel" id="reminderForm">
-            <h2>Add New Reminder</h2>
+        <!-- Reminder Form Panel -->
+        <div id="reminderForm" class="panel">
+            <h2>Add a Reminder</h2>
             <form>
                 <div class="form-group">
-                    <label for="reminderText">Reminder:</label>
-                    <input type="text" id="reminderText" required placeholder="What do you need to remember?">
+                    <label for="reminderText">Reminder</label>
+                    <input type="text" id="reminderText" placeholder="What do you need to remember?">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group half">
-                        <label for="reminderDate">Date:</label>
-                        <input type="date" id="reminderDate" required>
+                        <label for="reminderTime">Time</label>
+                        <input type="time" id="reminderTime">
                     </div>
-                    
                     <div class="form-group half">
-                        <label for="reminderTime">Time:</label>
-                        <input type="time" id="reminderTime" required>
+                        <label for="reminderDate">Date</label>
+                        <input type="date" id="reminderDate">
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reminderMessage">Additional Note (optional)</label>
+                    <textarea id="reminderMessage" placeholder="Add more details here..."></textarea>
                 </div>
                 
                 <div class="form-group">
                     <div class="recurring-checkbox">
                         <input type="checkbox" id="isRecurring">
-                        <label for="isRecurring">Recurring reminder?</label>
+                        <label for="isRecurring">Recurring Reminder</label>
                     </div>
                     
                     <div id="recurringOptions" style="display: none;">
@@ -106,47 +120,23 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="reminderMessage">Message (optional):</label>
-                    <textarea id="reminderMessage" placeholder="Add any additional details here..."></textarea>
-                </div>
-                
-                <button type="submit" class="btn btn-success">Add Reminder</button>
+                <button type="submit" class="btn btn-primary">Add Reminder</button>
             </form>
         </div>
         
-        <!-- Email Notifications Section -->
-        <div class="panel" id="emailSettings">
-            <h2>Email Notifications</h2>
-            <p>Enter your email address to receive reminder notifications:</p>
-            
-            <div class="form-group">
-                <label for="userEmail">Your Email:</label>
-                <input type="email" id="userEmail" required placeholder="your.email@example.com">
-            </div>
-            <button id="saveEmailBtn" class="btn btn-primary">Save Email</button>
-            <p id="emailStatus" class="message"></p>
-            
-            <div class="storage-info">
-                <h3>Data Storage Information</h3>
-                <p>All your reminders and settings are stored locally in your browser. They are not sent to any server except when sending email notifications.</p>
-                <p>Use the Export/Import buttons above to back up your data or transfer it to another device.</p>
-            </div>
-        </div>
-        
-        <!-- Reset App Data Button -->
-        <div class="panel" id="resetPanel">
-            <h2>Reset App Data</h2>
+        <!-- Reset Panel -->
+        <div id="resetPanel" class="panel">
+            <h2>Reset App</h2>
             <p>Warning: This will clear all saved reminders and settings.</p>
-            <button id="resetAppBtn" class="btn btn-danger">Reset All Data</button>
+            <button id="resetAppBtn" class="btn btn-danger">Reset App Data</button>
         </div>
     </div>
-
-    <!-- Notification Element (hidden initially) -->
+    
+    <!-- Notification element -->
     <div id="notification" class="notification" style="display: none;">
-        <span id="notificationMessage"></span>
+        <div id="notificationMessage"></div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>
