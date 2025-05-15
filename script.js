@@ -2,65 +2,79 @@
 const reminderForm = document.querySelector('#reminderForm form');
 const remindersList = document.getElementById('remindersList');
 
-// Load reminders when page loads
-document.addEventListener('DOMContentLoaded', loadReminders);
+// Initialize app settings
+let appSettings = {
+    darkMode: false,
+    mobileView: window.innerWidth < 768,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+};
 
-// Add event listener for form submission
-reminderForm.addEventListener('submit', addReminder);
+// Load reminders and settings when page loads
+document.addEventListener('DOMContentLoaded', initializeApp);
 
-// Function to move email section to the bottom
-function moveEmailSectionToBottom() {
-    const container = document.querySelector('.container');
-    const emailSettings = document.getElementById('emailSettings');
+// Function to initialize the app
+function initializeApp() {
+    // Load user settings
+    loadSettings();
     
-    if (emailSettings && container) {
-        // Remove the email settings from its current position
-        emailSettings.remove();
+    // Load reminders
+    loadReminders();
+    
+    // Set up form event listeners
+    reminderForm.addEventListener('submit', addReminder);
+    
+    // Set up layout toggle
+    setupLayoutToggle();
+    
+    // Set up timezone detection
+    displayTimeZone();
+}
+
+// Function to set up the layout toggle
+function setupLayoutToggle() {
+    const layoutToggleBtn = document.getElementById('layoutToggleBtn');
+    if (layoutToggleBtn) {
+        layoutToggleBtn.addEventListener('click', function() {
+            // Toggle mobile view setting
+            appSettings.mobileView = !appSettings.mobileView;
+            
+            // Update UI based on new setting
+            document.body.classList.toggle('mobile-view', appSettings.mobileView);
+            
+            // Update button text
+            layoutToggleBtn.textContent = appSettings.mobileView ? 'Switch to Desktop View' : 'Switch to Mobile View';
+            
+            // Save settings
+            saveSettings();
+            
+            // Show notification
+            showNotification(`Switched to ${appSettings.mobileView ? 'mobile' : 'desktop'} view`, 'info');
+        });
         
-        // Add it back at the end (before reset panel)
-        const resetPanel = document.getElementById('resetPanel');
-        if (resetPanel) {
-            container.insertBefore(emailSettings, resetPanel);
-        } else {
-            container.appendChild(emailSettings);
-        }
-        
-        // Add a transition effect
-        emailSettings.style.transition = 'opacity 0.5s ease';
-        emailSettings.style.opacity = '0';
-        
-        // Fade it back in
-        setTimeout(() => {
-            emailSettings.style.opacity = '1';
-        }, 50);
+        // Set initial state
+        layoutToggleBtn.textContent = appSettings.mobileView ? 'Switch to Desktop View' : 'Switch to Mobile View';
+        document.body.classList.toggle('mobile-view', appSettings.mobileView);
     }
 }
 
-// Function to move email section to the top
-function moveEmailSectionToTop() {
-    const container = document.querySelector('.container');
-    const emailSettings = document.getElementById('emailSettings');
-    
-    if (emailSettings && container) {
-        // Remove the email settings from its current position
-        emailSettings.remove();
-        
-        // Add it back at the top (after header)
-        const header = document.querySelector('.app-header');
-        if (header) {
-            container.insertBefore(emailSettings, header.nextSibling);
-        } else {
-            container.prepend(emailSettings);
-        }
-        
-        // Add a transition effect
-        emailSettings.style.transition = 'opacity 0.5s ease';
-        emailSettings.style.opacity = '0';
-        
-        // Fade it back in
-        setTimeout(() => {
-            emailSettings.style.opacity = '1';
-        }, 50);
+// Function to display the detected timezone
+function displayTimeZone() {
+    const timezoneDisplay = document.getElementById('timezoneDisplay');
+    if (timezoneDisplay) {
+        timezoneDisplay.textContent = `Your detected timezone: ${appSettings.timezone}`;
+    }
+}
+
+// Function to save app settings
+function saveSettings() {
+    localStorage.setItem('reminderAppSettings', JSON.stringify(appSettings));
+}
+
+// Function to load app settings
+function loadSettings() {
+    const savedSettings = localStorage.getItem('reminderAppSettings');
+    if (savedSettings) {
+        appSettings = JSON.parse(savedSettings);
     }
 }
 
@@ -71,11 +85,13 @@ function addReminder(e) {
     // Get form values
     const reminderText = document.getElementById('reminderText').value;
     const reminderTime = document.getElementById('reminderTime').value;
+    const reminderDate = document.getElementById('reminderDate').value || new Date().toISOString().split('T')[0];
     const reminderMessage = document.getElementById('reminderMessage').value;
+    const isRecurring = document.getElementById('isRecurring').checked;
+    const recurringType = document.getElementById('recurringType').value;
     
     // Validate
     if (!reminderText || !reminderTime) {
-        alert('Please enter both a reminder and a time');
         showNotification('Please enter both a reminder and a time', 'error');
         return;
     }
@@ -85,22 +101,38 @@ function addReminder(e) {
         id: Date.now(), // Unique ID based on timestamp
         text: reminderText,
         time: reminderTime,
+        date: reminderDate,
         message: reminderMessage,
-        date: new Date().toDateString(), // Store current date
-        notificationSent: false // Track if email notification has been sent
+        isRecurring: isRecurring,
+        recurringType: recurringType,
+        timezone: appSettings.timezone,
+        notificationSent: false, // Track if email notification has been sent
+        createdAt: new Date().toISOString()
     };
     
     // Add to localStorage
     saveReminder(reminder);
     
-    // Display the reminder
-    displayReminder(reminder);
+    // Display the reminder if it's for today or future
+    const reminderDateObj = new Date(reminderDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (reminderDateObj >= today) {
+        displayReminder(reminder);
+    }
     
     // Show success notification
     showNotification('Reminder added successfully', 'success');
     
     // Reset form
     reminderForm.reset();
+    
+    // Set date field back to today
+    const dateInput = document.getElementById('reminderDate');
+    if (dateInput) {
+        dateInput.valueAsDate = new Date();
+    }
 }
 
 // Function to save reminder to localStorage
@@ -125,14 +157,27 @@ function displayReminder(reminder) {
     reminderItem.classList.add('reminder-item');
     reminderItem.setAttribute('data-id', reminder.id);
     
-    // Format time for display
+    // Format time and date for display
     const timeDisplay = formatTime(reminder.time);
+    const dateDisplay = formatDate(reminder.date);
+    
+    let recurringBadge = '';
+    if (reminder.isRecurring) {
+        recurringBadge = `<span class="recurring-badge">${capitalizeFirstLetter(reminder.recurringType)}</span>`;
+    }
     
     reminderItem.innerHTML = `
-        <div class="reminder-time">${timeDisplay}</div>
+        <div class="reminder-meta">
+            <div class="reminder-time">${timeDisplay}</div>
+            <div class="reminder-date">${dateDisplay}</div>
+            ${recurringBadge}
+        </div>
         <div class="reminder-text">${reminder.text}</div>
         ${reminder.message ? `<div class="reminder-message">${reminder.message}</div>` : ''}
-        <button class="delete-btn" onclick="deleteReminder(${reminder.id})">Delete</button>
+        <div class="reminder-actions">
+            <button class="edit-btn" onclick="editReminder(${reminder.id})">Edit</button>
+            <button class="delete-btn" onclick="deleteReminder(${reminder.id})">Delete</button>
+        </div>
     `;
     
     // Add notification sent indicator if applicable
@@ -146,6 +191,85 @@ function displayReminder(reminder) {
     remindersList.appendChild(reminderItem);
 }
 
+// Function to edit a reminder
+function editReminder(id) {
+    // Get the reminder from localStorage
+    const reminders = JSON.parse(localStorage.getItem('reminders'));
+    const reminder = reminders.find(r => r.id === id);
+    
+    if (!reminder) return;
+    
+    // Populate the form with the reminder data
+    document.getElementById('reminderText').value = reminder.text;
+    document.getElementById('reminderTime').value = reminder.time;
+    
+    const dateInput = document.getElementById('reminderDate');
+    if (dateInput) {
+        dateInput.value = reminder.date;
+    }
+    
+    document.getElementById('reminderMessage').value = reminder.message || '';
+    
+    const isRecurringCheckbox = document.getElementById('isRecurring');
+    if (isRecurringCheckbox) {
+        isRecurringCheckbox.checked = reminder.isRecurring || false;
+        toggleRecurringOptions();
+    }
+    
+    const recurringTypeSelect = document.getElementById('recurringType');
+    if (recurringTypeSelect && reminder.recurringType) {
+        recurringTypeSelect.value = reminder.recurringType;
+    }
+    
+    // Set up form for editing
+    reminderForm.setAttribute('data-edit-id', id);
+    document.querySelector('#reminderForm button[type="submit"]').textContent = 'Update Reminder';
+    
+    // Scroll to form
+    reminderForm.scrollIntoView({ behavior: 'smooth' });
+    
+    // Show notification
+    showNotification('Editing reminder - make your changes and click Update', 'info');
+    
+    // Set up cancel button if it doesn't exist
+    if (!document.getElementById('cancelEditBtn')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.id = 'cancelEditBtn';
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn btn-secondary';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.style.marginLeft = '10px';
+        
+        cancelBtn.addEventListener('click', function() {
+            // Reset form
+            reminderForm.reset();
+            reminderForm.removeAttribute('data-edit-id');
+            document.querySelector('#reminderForm button[type="submit"]').textContent = 'Add Reminder';
+            this.remove();
+            
+            // Reset date field to today
+            if (dateInput) {
+                dateInput.valueAsDate = new Date();
+            }
+            
+            // Show notification
+            showNotification('Editing cancelled', 'info');
+        });
+        
+        document.querySelector('#reminderForm button[type="submit"]').after(cancelBtn);
+    }
+}
+
+// Function to toggle recurring options visibility
+function toggleRecurringOptions() {
+    const isRecurring = document.getElementById('isRecurring').checked;
+    const recurringOptions = document.getElementById('recurringOptions');
+    
+    if (recurringOptions) {
+        recurringOptions.style.display = isRecurring ? 'block' : 'none';
+    }
+}
+
 // Function to format time (convert from 24h to 12h format)
 function formatTime(time) {
     const [hours, minutes] = time.split(':');
@@ -153,6 +277,18 @@ function formatTime(time) {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const formattedHour = hour % 12 || 12;
     return `${formattedHour}:${minutes} ${ampm}`;
+}
+
+// Function to format date
+function formatDate(dateString) {
+    const options = { weekday: 'short', month: 'short', day: 'numeric' };
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', options);
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // Function to load reminders from localStorage
@@ -164,33 +300,160 @@ function loadReminders() {
         reminders = JSON.parse(localStorage.getItem('reminders'));
     }
     
-    // Get today's date string
-    const today = new Date().toDateString();
+    // Process recurring reminders
+    processRecurringReminders(reminders);
     
-    // Filter reminders for today only
-    const todayReminders = reminders.filter(reminder => reminder.date === today);
+    // Get selected date for filtering
+    const selectedDate = document.getElementById('filterDate') ? 
+                         document.getElementById('filterDate').value : 
+                         new Date().toISOString().split('T')[0];
+    
+    // Filter reminders for selected date and future recurring events
+    const filteredReminders = filterRemindersByDate(reminders, selectedDate);
     
     // Sort reminders by time
-    todayReminders.sort((a, b) => {
-        return new Date('1970/01/01 ' + a.time) - new Date('1970/01/01 ' + b.time);
+    filteredReminders.sort((a, b) => {
+        // First sort by date
+        const dateA = new Date(a.date + 'T' + a.time);
+        const dateB = new Date(b.date + 'T' + b.time);
+        return dateA - dateB;
     });
     
     // Clear the reminders list first
     remindersList.innerHTML = '';
     
     // Display each reminder
-    todayReminders.forEach(reminder => {
+    filteredReminders.forEach(reminder => {
         displayReminder(reminder);
     });
     
+    // Update counts and labels
+    updateReminderCounts(reminders);
+    
     // Start checking for due reminders
     setUpReminderChecker();
+}
+
+// Function to filter reminders by date
+function filterRemindersByDate(reminders, targetDate) {
+    // Create Date object for target date with time set to 00:00:00
+    const targetDateObj = new Date(targetDate + 'T00:00:00');
+    targetDateObj.setHours(0, 0, 0, 0);
     
-    // Check if email is set and move email section accordingly
-    if (localStorage.getItem('userEmail')) {
-        moveEmailSectionToBottom();
-    } else {
-        moveEmailSectionToTop();
+    return reminders.filter(reminder => {
+        // Get date object for reminder date
+        const reminderDateObj = new Date(reminder.date + 'T00:00:00');
+        reminderDateObj.setHours(0, 0, 0, 0);
+        
+        // Check if dates match (for non-recurring or reminder date is exactly target date)
+        const datesMatch = reminderDateObj.getTime() === targetDateObj.getTime();
+        
+        // Include if dates match or it's a relevant recurring reminder
+        return datesMatch;
+    });
+}
+
+// Function to process recurring reminders
+function processRecurringReminders(reminders) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const processedReminders = [...reminders];
+    const recurringToAdd = [];
+    
+    // Check each reminder
+    reminders.forEach(reminder => {
+        if (reminder.isRecurring) {
+            const reminderDate = new Date(reminder.date + 'T00:00:00');
+            
+            // If the base date is in the past, we may need to generate future instances
+            if (reminderDate < today) {
+                let nextOccurrence = calculateNextOccurrence(reminderDate, reminder.recurringType);
+                
+                // Keep generating future occurrences until we get one that's not in the past
+                while (nextOccurrence < today) {
+                    nextOccurrence = calculateNextOccurrence(nextOccurrence, reminder.recurringType);
+                }
+                
+                // Add the next occurrence if it's not too far in the future (limit to 3 months ahead)
+                const threeMonthsLater = new Date();
+                threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+                
+                if (nextOccurrence <= threeMonthsLater) {
+                    const newReminder = {...reminder};
+                    newReminder.id = Date.now() + Math.floor(Math.random() * 1000); // New unique ID
+                    newReminder.date = nextOccurrence.toISOString().split('T')[0];
+                    newReminder.notificationSent = false;
+                    newReminder.generated = true; // Mark as generated
+                    recurringToAdd.push(newReminder);
+                }
+            }
+        }
+    });
+    
+    // Add new recurring instances and save back
+    if (recurringToAdd.length > 0) {
+        const allReminders = [...reminders, ...recurringToAdd];
+        localStorage.setItem('reminders', JSON.stringify(allReminders));
+        return allReminders;
+    }
+    
+    return reminders;
+}
+
+// Calculate next occurrence based on recurring type
+function calculateNextOccurrence(dateObj, recurringType) {
+    const nextDate = new Date(dateObj);
+    
+    switch (recurringType) {
+        case 'daily':
+            nextDate.setDate(nextDate.getDate() + 1);
+            break;
+        case 'weekly':
+            nextDate.setDate(nextDate.getDate() + 7);
+            break;
+        case 'monthly':
+            nextDate.setMonth(nextDate.getMonth() + 1);
+            break;
+        case 'yearly':
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+            break;
+    }
+    
+    return nextDate;
+}
+
+// Function to update reminder counts
+function updateReminderCounts(allReminders) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Count reminders
+    const todayCount = allReminders.filter(r => {
+        const reminderDate = new Date(r.date + 'T00:00:00');
+        reminderDate.setHours(0, 0, 0, 0);
+        return reminderDate.getTime() === today.getTime();
+    }).length;
+    
+    const upcomingCount = allReminders.filter(r => {
+        const reminderDate = new Date(r.date + 'T00:00:00');
+        reminderDate.setHours(0, 0, 0, 0);
+        return reminderDate > today;
+    }).length;
+    
+    const totalCount = allReminders.length;
+    
+    // Update count displays if they exist
+    if (document.getElementById('todayCount')) {
+        document.getElementById('todayCount').textContent = todayCount;
+    }
+    
+    if (document.getElementById('upcomingCount')) {
+        document.getElementById('upcomingCount').textContent = upcomingCount;
+    }
+    
+    if (document.getElementById('totalCount')) {
+        document.getElementById('totalCount').textContent = totalCount;
     }
 }
 
@@ -203,6 +466,9 @@ function deleteReminder(id) {
     
     // Remove from UI
     document.querySelector(`.reminder-item[data-id="${id}"]`).remove();
+    
+    // Update counts
+    updateReminderCounts(reminders);
     
     // Show delete notification
     showNotification('Reminder deleted', 'warning');
@@ -226,7 +492,7 @@ function setUpReminderChecker() {
         setInterval(checkDueReminders, 60000);
     }, secondsUntilNextMinute * 1000);
     
-    console.log(`Reminder email notification system active. Checking for due reminders every minute.`);
+    console.log(`Reminder notification system active. Checking for due reminders every minute.`);
 }
 
 // Function to check for reminders that are due and send email notifications
@@ -241,6 +507,7 @@ function checkDueReminders() {
     const now = new Date();
     const currentHours = now.getHours();
     const currentMinutes = now.getMinutes();
+    const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const currentTimeString = `${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
     
     // Get all reminders
@@ -249,15 +516,14 @@ function checkDueReminders() {
         reminders = JSON.parse(localStorage.getItem('reminders'));
     }
     
-    // Filter for today's reminders
-    const today = new Date().toDateString();
-    const todayReminders = reminders.filter(reminder => reminder.date === today);
-    
     // Check each reminder
     let updated = false;
-    todayReminders.forEach(reminder => {
-        // Check if time matches current time (within the same minute) and notification not sent yet
-        if (reminder.time === currentTimeString && !reminder.notificationSent) {
+    reminders.forEach(reminder => {
+        // Check if date matches current date and time matches current time (within the same minute) and notification not sent yet
+        if (reminder.date === currentDate && 
+            reminder.time === currentTimeString && 
+            !reminder.notificationSent) {
+            
             // Send email notification
             sendReminderEmail(userEmail, reminder);
             
@@ -267,6 +533,9 @@ function checkDueReminders() {
             
             // Show a confirmation on the page
             showNotificationSent(reminder);
+            
+            // Show notification
+            showNotification(`Reminder sent: ${reminder.text}`, 'success');
         }
     });
     
@@ -282,11 +551,11 @@ function sendReminderEmail(email, reminder) {
         // Prepare template parameters
         const templateParams = {
             to_email: email,
-            subject: `Reminder: ${reminder.text}`,
-            from_name: "Your Reminder App",
+            from_name: "Your Friendly Reminder",
             reply_to: "noreply@reminderapp.com",
             reminder_text: reminder.text,
             reminder_time: formatTime(reminder.time),
+            reminder_date: formatDate(reminder.date),
             reminder_message: reminder.message || 'No additional message'
         };
 
@@ -323,7 +592,93 @@ function showNotificationSent(reminder) {
     }
 }
 
-// Simple email settings system
+// Function to handle date filter change
+function handleDateFilterChange() {
+    loadReminders();
+}
+
+// Function to export reminders
+function exportReminders() {
+    const reminders = localStorage.getItem('reminders');
+    if (!reminders || JSON.parse(reminders).length === 0) {
+        showNotification('No reminders to export', 'warning');
+        return;
+    }
+    
+    // Create export data
+    const exportData = {
+        reminders: JSON.parse(reminders),
+        email: localStorage.getItem('userEmail'),
+        settings: appSettings,
+        exportDate: new Date().toISOString()
+    };
+    
+    // Convert to JSON string
+    const dataStr = JSON.stringify(exportData, null, 2);
+    
+    // Create download link
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'reminder-app-data.json';
+    
+    // Create link element
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showNotification('Reminders exported successfully', 'success');
+}
+
+// Function to import reminders
+function importReminders() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'application/json';
+    
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                // Validate data structure
+                if (!data.reminders) {
+                    throw new Error('Invalid import file format');
+                }
+                
+                // Import reminders
+                localStorage.setItem('reminders', JSON.stringify(data.reminders));
+                
+                // Import email if not already set
+                if (data.email && !localStorage.getItem('userEmail')) {
+                    localStorage.setItem('userEmail', data.email);
+                }
+                
+                // Import settings
+                if (data.settings) {
+                    appSettings = {...appSettings, ...data.settings};
+                    saveSettings();
+                }
+                
+                // Reload reminders
+                loadReminders();
+                
+                showNotification('Reminders imported successfully', 'success');
+            } catch (error) {
+                console.error('Import error:', error);
+                showNotification('Failed to import reminders: ' + error.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+    });
+    
+    fileInput.click();
+}
+
+// Email settings system
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
     const userEmailInput = document.getElementById('userEmail');
@@ -335,9 +690,6 @@ document.addEventListener('DOMContentLoaded', function() {
         userEmailInput.value = localStorage.getItem('userEmail');
         emailStatus.textContent = `Notifications will be sent to: ${localStorage.getItem('userEmail')}`;
         emailStatus.className = 'success-message';
-        moveEmailSectionToBottom();
-    } else {
-        moveEmailSectionToTop();
     }
     
     // Save email button click
@@ -347,7 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Validate email
             if (!email || !email.includes('@') || !email.includes('.')) {
-                alert('Please enter a valid email address');
                 showNotification('Please enter a valid email address', 'error');
                 return;
             }
@@ -359,12 +710,46 @@ document.addEventListener('DOMContentLoaded', function() {
             emailStatus.textContent = `Notifications will be sent to: ${email}`;
             emailStatus.className = 'success-message';
             
-            // Move email section to bottom
-            moveEmailSectionToBottom();
+            // Move email settings to bottom (if implemented)
+            if (typeof moveEmailSectionToBottom === 'function') {
+                moveEmailSectionToBottom();
+            }
             
             // Send a test email
             sendTestEmail(email);
         });
+    }
+    
+    // Set up recurring checkbox event listener
+    const isRecurringCheckbox = document.getElementById('isRecurring');
+    if (isRecurringCheckbox) {
+        isRecurringCheckbox.addEventListener('change', toggleRecurringOptions);
+    }
+    
+    // Set up date filter change event listener
+    const filterDateInput = document.getElementById('filterDate');
+    if (filterDateInput) {
+        filterDateInput.addEventListener('change', handleDateFilterChange);
+        
+        // Initialize to today
+        filterDateInput.valueAsDate = new Date();
+    }
+    
+    // Initialize reminder date input to today
+    const reminderDateInput = document.getElementById('reminderDate');
+    if (reminderDateInput) {
+        reminderDateInput.valueAsDate = new Date();
+    }
+    
+    // Set up export and import buttons
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportReminders);
+    }
+    
+    const importBtn = document.getElementById('importBtn');
+    if (importBtn) {
+        importBtn.addEventListener('click', importReminders);
     }
     
     // Reset app data button
@@ -376,8 +761,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clear all localStorage
                 localStorage.clear();
                 
-                // Move email section back to top
-                moveEmailSectionToTop();
+                // Reset settings to defaults
+                appSettings = {
+                    darkMode: false,
+                    mobileView: window.innerWidth < 768,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                };
                 
                 // Show notification before reload
                 showNotification('App data has been reset successfully', 'warning');
@@ -396,11 +785,11 @@ function sendTestEmail(email) {
     // Prepare template parameters
     const templateParams = {
         to_email: email,
-        subject: 'Test Email - Reminder App Setup',
-        from_name: "Your Reminder App",
+        from_name: "Your Friendly Reminder",
         reply_to: "noreply@reminderapp.com",
         reminder_text: 'Email Setup Complete',
         reminder_time: 'Now',
+        reminder_date: formatDate(new Date().toISOString().split('T')[0]),
         reminder_message: 'Your email has been set up for reminder notifications. You will receive notifications for your reminders at this email address.'
     };
 
@@ -408,11 +797,9 @@ function sendTestEmail(email) {
     emailjs.send('service_hfa9nka', 'template_211pgst', templateParams)
         .then(function(response) {
             console.log('Test email sent successfully:', response);
-            alert('Test email sent to ' + email);
             showNotification(`Test email sent to ${email}`, 'success');
         }, function(error) {
             console.error('Error sending test email:', error);
-            alert('Failed to send test email. Check console for details.');
             showNotification('Failed to send test email', 'error');
         });
 }
@@ -422,10 +809,15 @@ function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     const notificationMessage = document.getElementById('notificationMessage');
     
+    if (!notification || !notificationMessage) {
+        console.error('Notification elements not found in DOM');
+        return;
+    }
+    
     // Set the message
     notificationMessage.textContent = message;
     
-    // Set the type (success, error, warning)
+    // Set the type (success, error, warning, info)
     notification.className = 'notification';
     notification.classList.add(`notification-${type}`);
     
@@ -436,6 +828,8 @@ function showNotification(message, type = 'success') {
         notification.style.borderLeftColor = '#e74c3c';
     } else if (type === 'warning') {
         notification.style.borderLeftColor = '#f39c12';
+    } else if (type === 'info') {
+        notification.style.borderLeftColor = '#3498db';
     }
     
     // Show the notification
