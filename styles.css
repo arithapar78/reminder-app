@@ -7,16 +7,71 @@
 
 /* Base styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto Condensed', Arial, sans-serif;
     line-height: 1.6;
-    background-color: #f7f7f7;
+    background-color: #f5f5f5;
     color: #333;
     padding: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Basketball texture pattern for light mode */
+    background-image: 
+        radial-gradient(circle, rgba(0,0,0,0.05) 2px, transparent 2px),
+        radial-gradient(circle, rgba(0,0,0,0.05) 2px, transparent 2px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+}
+
+/* Dark mode colors with basketball texture */
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #f5f5f5;
+    /* Basketball texture pattern for dark mode */
+    background-image: 
+        radial-gradient(circle, rgba(255,255,255,0.05) 2px, transparent 2px),
+        radial-gradient(circle, rgba(255,255,255,0.05) 2px, transparent 2px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    background: #ff8c00;
+    border: 2px solid #000;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Roboto Condensed', Arial, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000;
+    margin: 10px auto;
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.dark-mode .theme-toggle {
+    background: #000;
+    border-color: #ff8c00;
+    color: #ff8c00;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-icon {
+    font-size: 18px;
 }
 
 .container {
     max-width: 800px;
     margin: 0 auto;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z' fill='%23ff8c00' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
 }
 
 /* Header */
@@ -38,18 +93,32 @@ body {
 
 /* Panel styling */
 .panel {
-    background-color: white;
+    background-color: #fff; /* White background */
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 30px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #7d3c50; /* Burgundy accent */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark-mode .panel {
+    background-color: #3f4a59; /* Dark navy blue */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid #a35a6e; /* Lighter burgundy accent for dark mode */
 }
 
 .panel h2 {
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #e8e8e0; /* Cream border */
     color: #2c3e50;
+    font-family: "Baskerville", serif;
+}
+
+.dark-mode .panel h2 {
+    color: #e8e8e0; /* Light cream text */
+    border-bottom: 1px solid #4b5969; /* Darker border in dark mode */
 }
 
 /* Form styling */
@@ -85,35 +154,63 @@ input[type="time"] {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 .btn-primary {
-    background-color: #3498db;
-    color: white;
+    background-color: #7d3c50; /* Burgundy */
+    color: #e8e8e0; /* Light cream */
+}
+
+.dark-mode .btn-primary {
+    background-color: #a35a6e; /* Lighter burgundy */
 }
 
 .btn-primary:hover {
-    background-color: #2980b9;
+    background-color: #6a3343; /* Darker burgundy */
+    transform: translateY(-2px);
+}
+
+.dark-mode .btn-primary:hover {
+    background-color: #b66c7e; /* Even lighter burgundy */
 }
 
 .btn-secondary {
-    background-color: #95a5a6;
-    color: white;
+    background-color: #3f4a59; /* Navy blue */
+    color: #e8e8e0; /* Light cream */
     margin-right: 10px;
 }
 
+.dark-mode .btn-secondary {
+    background-color: #5d6b7b; /* Lighter navy */
+}
+
 .btn-secondary:hover {
-    background-color: #7f8c8d;
+    background-color: #2c3639; /* Darker navy */
+    transform: translateY(-2px);
+}
+
+.dark-mode .btn-secondary:hover {
+    background-color: #6e7c8c; /* Even lighter navy */
 }
 
 .btn-danger {
-    background-color: #e74c3c;
-    color: white;
+    background-color: #a63f3f; /* Deep red */
+    color: #e8e8e0; /* Light cream */
+}
+
+.dark-mode .btn-danger {
+    background-color: #c15555; /* Lighter red */
 }
 
 .btn-danger:hover {
-    background-color: #c0392b;
+    background-color: #8a3333; /* Darker red */
+    transform: translateY(-2px);
+}
+
+.dark-mode .btn-danger:hover {
+    background-color: #d36868; /* Even lighter red */
 }
 
 .button-group {
@@ -137,24 +234,51 @@ input[type="time"] {
 }
 
 .reminder-item {
-    background-color: #f9f9f9;
-    border-left: 4px solid #3498db;
+    background-color: #f7f7f2; /* Light cream */
+    border-left: 4px solid #3f4a59; /* Navy */
     border-radius: 4px;
     padding: 15px;
     margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.dark-mode .reminder-item {
+    background-color: #32393f; /* Darker navy */
+    border-left: 4px solid #5d6b7b; /* Lighter navy */
+}
+
+.reminder-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .reminder-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .reminder-item h3 {
     margin-bottom: 10px;
     color: #2c3e50;
+    font-family: "Baskerville", serif;
+    font-weight: normal;
+    transition: color 0.3s ease;
+}
+
+.dark-mode .reminder-item h3 {
+    color: #e8e8e0;
 }
 
 .reminder-meta {
     display: flex;
-    color: #7f8c8d;
+    color: #64717f;
     margin-bottom: 10px;
     font-size: 14px;
     gap: 15px;
+    transition: color 0.3s ease;
+}
+
+.dark-mode .reminder-meta {
+    color: #a5b0bd;
 }
 
 .reminder-actions {
@@ -169,16 +293,192 @@ input[type="time"] {
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    transition: all 0.3s ease;
 }
 
 .edit-btn {
-    background-color: #f39c12;
-    color: white;
+    background-color: #3f4a59; /* Navy */
+    color: #e8e8e0;
+}
+
+.dark-mode .edit-btn {
+    background-color: #5d6b7b; /* Lighter navy */
+}
+
+.edit-btn:hover {
+    background-color: #2c3639;
+    transform: translateY(-1px);
+}
+
+.dark-mode .edit-btn:hover {
+    background-color: #6e7c8c;
 }
 
 .delete-btn {
+    background-color: #7d3c50; /* Burgundy */
+    color: #e8e8e0;
+}
+
+.dark-mode .delete-btn {
+    background-color: #a35a6e; /* Lighter burgundy */
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+.dark-mode .delete-btn:hover {
     background-color: #e74c3c;
-    color: white;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 30px;
+    color: #666;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
+    font-style: italic;
+    position: relative;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.dark-mode .empty-state {
+    color: #ccc;
+    background-color: #333;
+    border: 2px dashed #444;
+}
+
+/* Basketball icon for empty state */
+.empty-state::before {
+    content: "🏀";
+    display: block;
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ff8c00; /* Orange */
+    color: #000;
+    padding: 15px 25px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+    font-family: 'Roboto Condensed', Arial, sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-left: 6px solid #000; /* Black border */
+}
+
+.dark-mode .notification {
+    background-color: #000; /* Black in dark mode */
+    color: #ff8c00; /* Orange text */
+    border-left: 6px solid #ff8c00; /* Orange border */
+}
+
+.notification.error {
+    background-color: #e74c3c; /* Red */
+    color: #fff;
+    border-left: 6px solid #c0392b;
+}
+
+.dark-mode .notification.error {
+    background-color: #c0392b;
+    border-left: 6px solid #e74c3c;
+}
+
+.notification.warning {
+    background-color: #f39c12; /* Yellow */
+    color: #000;
+    border-left: 6px solid #e67e22;
+}
+
+.dark-mode .notification.warning {
+    background-color: #e67e22;
+    border-left: 6px solid #f39c12;
+    color: #000;
+}
+
+.notification::before {
+    content: "🏀";
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.notification.hidden {
+    opacity: 0;
+    transform: translateY(30px);
+    visibility: hidden;
+}
+
+/* Filter controls */
+.filter-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #ff8c00;
+}
+
+.dark-mode .filter-controls {
+    background-color: #333;
+    border: 2px solid #ff8c00;
+}
+
+/* Button group */
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-controls input,
+    .filter-controls button {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group button {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .app-header h1 {
+        font-size: 28px;
+    }
+    
+    .app-header {
+        padding: 15px 10px;
+    }
 }
 
 /* Empty state */
@@ -240,4 +540,4 @@ input[type="time"] {
         margin-right: 0;
         margin-bottom: 10px;
     }
-}
+}	

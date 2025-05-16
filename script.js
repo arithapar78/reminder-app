@@ -1,4 +1,43 @@
-// DOM Elements
+// Load theme preference from localStorage
+function loadThemePreference() {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    
+    if (darkMode) {
+        document.body.classList.add('dark-mode');
+        updateThemeToggleUI(true);
+    } else {
+        document.body.classList.remove('dark-mode');
+        updateThemeToggleUI(false);
+    }
+}
+
+// Toggle between light and dark theme
+function toggleTheme() {
+    const isDarkMode = document.body.classList.toggle('dark-mode');
+    
+    // Update localStorage
+    localStorage.setItem('darkMode', isDarkMode);
+    
+    // Update toggle UI
+    updateThemeToggleUI(isDarkMode);
+    
+    // Show notification
+    showNotification(`Switched to ${isDarkMode ? 'dark' : 'light'} mode`);
+}
+
+// Update theme toggle button UI
+function updateThemeToggleUI(isDarkMode) {
+    const toggleIcon = themeToggle.querySelector('.toggle-icon');
+    const toggleText = themeToggle.querySelector('.toggle-text');
+    
+    if (isDarkMode) {
+        toggleIcon.textContent = '🏀'; // Keep basketball icon for both themes
+        toggleText.textContent = 'Light Mode';
+    } else {
+        toggleIcon.textContent = '🏀'; // Keep basketball icon for both themes
+        toggleText.textContent = 'Dark Mode';
+    }
+}// DOM Elements
 const reminderForm = document.getElementById('reminder-form');
 const remindersList = document.getElementById('reminders-list');
 const filterDateInput = document.getElementById('filter-date');
@@ -10,6 +49,7 @@ const clearBtn = document.getElementById('clear-btn');
 const dateDisplay = document.getElementById('date-display');
 const notification = document.getElementById('notification');
 const notificationMessage = document.getElementById('notification-message');
+const themeToggle = document.getElementById('theme-toggle');
 
 // Initialize app when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', initApp);
@@ -21,6 +61,9 @@ function initApp() {
     
     // Set up default date values
     setDefaultDates();
+    
+    // Load theme preference
+    loadThemePreference();
     
     // Set up event listeners
     setupEventListeners();
@@ -88,6 +131,11 @@ function setupEventListeners() {
     
     if (clearBtn) {
         clearBtn.addEventListener('click', clearAllReminders);
+    }
+    
+    // Theme toggle
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
     }
 }
 
