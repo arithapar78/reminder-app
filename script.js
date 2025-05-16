@@ -104,6 +104,11 @@ function displayReminder(reminder) {
     reminderElement.className = 'reminder-item';
     reminderElement.setAttribute('data-id', reminder.id);
     
+    // Add completed class if reminder is completed
+    if (reminder.completed) {
+        reminderElement.classList.add('completed');
+    }
+    
     // Format date and time for display
     const displayDate = formatDateDisplay(reminder.date);
     const displayTime = formatTimeDisplay(reminder.time);
@@ -130,17 +135,21 @@ function displayReminder(reminder) {
         <div class="reminder-meta">
             <span class="reminder-date">${displayDate}</span>
             <span class="reminder-time">${displayTime}</span>
+            ${reminder.completed ? '<span class="reminder-completed">Completed</span>' : ''}
         </div>
         <div class="reminder-actions">
+            <button class="complete-btn">${reminder.completed ? 'Undo' : 'Complete'}</button>
             <button class="edit-btn">Edit</button>
             <button class="delete-btn">Delete</button>
         </div>
     `;
     
     // Add event listeners
+    const completeBtn = reminderElement.querySelector('.complete-btn');
     const editBtn = reminderElement.querySelector('.edit-btn');
     const deleteBtn = reminderElement.querySelector('.delete-btn');
     
+    completeBtn.addEventListener('click', () => toggleReminderCompletion(reminder.id));
     editBtn.addEventListener('click', () => editReminder(reminder.id));
     deleteBtn.addEventListener('click', () => deleteReminder(reminder.id));
     
@@ -236,17 +245,19 @@ function showAllReminders() {
 // Export reminders
 function exportReminders() {
     try {
-        // Get reminders
+        // Get reminders and history
         const reminders = getReminders();
+        const history = getHistory();
         
-        if (reminders.length === 0) {
-            showNotification('No reminders to export', 'warning');
+        if (reminders.length === 0 && history.length === 0) {
+            showNotification('No data to export', 'warning');
             return;
         }
         
         // Create export data
         const exportData = {
             reminders: reminders,
+            history: history,
             exportDate: new Date().toISOString(),
             version: '2.0.0' // Add version info for future compatibility
         };
@@ -264,10 +275,10 @@ function exportReminders() {
         linkElement.setAttribute('download', exportFileName);
         linkElement.click();
         
-        showNotification('Reminders exported successfully');
+        showNotification('Data exported successfully');
     } catch (error) {
-        console.error('Error exporting reminders:', error);
-        showNotification('Failed to export reminders', 'error');
+        console.error('Error exporting data:', error);
+        showNotification('Failed to export data', 'error');
     }
 }
 
@@ -294,23 +305,33 @@ function importReminders() {
                         throw new Error('Invalid import file format');
                     }
                     
-                    // Ensure all reminders have tags (for backward compatibility)
+                    // Ensure all reminders have tags and completed status (for backward compatibility)
                     importData.reminders.forEach(reminder => {
                         if (!reminder.tag) {
                             reminder.tag = '';
+                        }
+                        if (reminder.completed === undefined) {
+                            reminder.completed = false;
                         }
                     });
                     
                     // Save imported reminders
                     saveReminders(importData.reminders);
                     
-                    // Reload reminders
-                    loadReminders();
+                    // Save history if available
+                    if (importData.history && Array.isArray(importData.history)) {
+                        saveHistory(importData.history);
+                    }
                     
-                    showNotification(`${importData.reminders.length} reminders imported successfully`);
+                    // Reload reminders and history
+                    loadReminders();
+                    loadHistory();
+                    
+                    const totalItems = importData.reminders.length + (importData.history ? importData.history.length : 0);
+                    showNotification(`${totalItems} items imported successfully`);
                 } catch (error) {
                     console.error('Import error:', error);
-                    showNotification('Failed to import reminders: ' + error.message, 'error');
+                    showNotification('Failed to import data: ' + error.message, 'error');
                 }
             };
             
@@ -367,8 +388,13 @@ function saveReminders(reminders) {
 // Delete a reminder
 function deleteReminder(id) {
     try {
-        // Remove from localStorage
+        // Get existing reminders
         let reminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+        
+        // Find the reminder to be deleted first
+        const reminderToDelete = reminders.find(reminder => reminder.id == id);
+        
+        // Remove from localStorage
         reminders = reminders.filter(reminder => reminder.id != id);
         localStorage.setItem('reminders', JSON.stringify(reminders));
         
@@ -378,6 +404,11 @@ function deleteReminder(id) {
             reminderElement.remove();
         }
         
+        // Add to history
+        if (reminderToDelete) {
+            addToHistory(reminderToDelete, 'deleted');
+        }
+        
         // Check if list is now empty
         if (reminders.length === 0 || document.querySelectorAll('.reminder-item').length === 0) {
             loadReminders(); // Will show the empty state
@@ -385,6 +416,16 @@ function deleteReminder(id) {
         
         // Show delete notification
         showNotification('Reminder deleted', 'warning');
+    } catch (error) {
+        console.error('Error deleting reminder:', error);
+        showNotification('Error deleting reminder', 'error');
+    }
+}Reminder deleted', 'warning');
+    } catch (error) {
+        console.error('Error deleting reminder:', error);
+        showNotification('Error deleting reminder', 'error');
+    }
+}Reminder deleted', 'warning');
     } catch (error) {
         console.error('Error deleting reminder:', error);
         showNotification('Error deleting reminder', 'error');
@@ -554,10 +595,28 @@ const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 const clearSearchBtn = document.getElementById('clear-search-btn');
 const tagButtons = document.querySelectorAll('.tag-btn');
+const historyList = document.getElementById('history-list');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+const quoteText = document.getElementById('quote-text');
+const quoteAuthor = document.getElementById('quote-author');
 
 // Global Variables
 let activeTagFilter = 'all';
 let searchQuery = '';
+
+// Quotes array for Quote of the Day
+const quotes = [
+    { text: "The best way to predict the future is to create it.", author: "Abraham Lincoln" },
+    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+    { text: "Don't count the days, make the days count.", author: "Muhammad Ali" },
+    { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { text: "What you get by achieving your goals is not as important as what you become by achieving your goals.", author: "Zig Ziglar" },
+    { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+    { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+    { text: "The only limit to our realization of tomorrow will be our doubts of today.", author: "Franklin D. Roosevelt" }
+];
 
 // Initialize app when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', initApp);
@@ -573,14 +632,41 @@ function initApp() {
     // Load theme preference
     loadThemePreference();
     
+    // Display quote of the day
+    displayQuoteOfTheDay();
+    
     // Set up event listeners
     setupEventListeners();
     
     // Load and display reminders
     loadReminders();
     
+    // Load and display history
+    loadHistory();
+    
     // Start countdown timer updates
     setInterval(updateCountdowns, 60000); // Update every minute
+}
+
+// Display a random quote of the day
+function displayQuoteOfTheDay() {
+    if (!quoteText || !quoteAuthor) return;
+    
+    // Get today's date string
+    const today = new Date().toDateString();
+    
+    // Create a deterministic "random" index based on the date
+    // This ensures the same quote appears all day, but changes daily
+    let seed = 0;
+    for (let i = 0; i < today.length; i++) {
+        seed += today.charCodeAt(i);
+    }
+    
+    const index = seed % quotes.length;
+    const quote = quotes[index];
+    
+    quoteText.textContent = quote.text;
+    quoteAuthor.textContent = quote.author;
 }
 
 // Update the date display in the header
@@ -667,6 +753,11 @@ function setupEventListeners() {
         });
     }
     
+    // History clear button
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', clearHistory);
+    }
+    
     // Data management buttons
     if (exportBtn) {
         exportBtn.addEventListener('click', exportReminders);
@@ -683,6 +774,120 @@ function setupEventListeners() {
     // Theme toggle
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleTheme);
+    }
+}
+
+// Load history from localStorage
+function loadHistory() {
+    try {
+        const history = getHistory();
+        
+        // Clear current list
+        if (historyList) {
+            historyList.innerHTML = '';
+            
+            // Display each history item
+            history.forEach(displayHistoryItem);
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+// Display a single history item
+function displayHistoryItem(item) {
+    if (!historyList) return;
+    
+    // Create history element
+    const historyElement = document.createElement('div');
+    historyElement.className = `history-item ${item.action}`;
+    
+    // Format date and time
+    const date = new Date(item.timestamp);
+    const formattedTime = date.toLocaleString();
+    
+    // Set icon based on action
+    let icon = '';
+    if (item.action === 'completed') {
+        icon = '✅';
+    } else if (item.action === 'deleted') {
+        icon = '🗑️';
+    }
+    
+    // Add content
+    historyElement.innerHTML = `
+        <span class="history-icon">${icon}</span>
+        <span class="history-text">${item.text}</span>
+        <span class="history-time">${formattedTime}</span>
+    `;
+    
+    // Add to DOM
+    historyList.prepend(historyElement); // Add newest first
+}
+
+// Add item to history
+function addToHistory(reminder, action) {
+    try {
+        const history = getHistory();
+        
+        // Create history item
+        const historyItem = {
+            id: Date.now(),
+            text: reminder.text,
+            tag: reminder.tag,
+            action: action, // 'completed' or 'deleted'
+            timestamp: new Date().toISOString()
+        };
+        
+        // Add to history
+        history.push(historyItem);
+        
+        // Limit history to 50 items
+        if (history.length > 50) {
+            history.shift(); // Remove oldest
+        }
+        
+        // Save to localStorage
+        saveHistory(history);
+        
+        // Display new item
+        displayHistoryItem(historyItem);
+    } catch (error) {
+        console.error('Error adding to history:', error);
+    }
+}
+
+// Clear history
+function clearHistory() {
+    try {
+        if (confirm('Are you sure you want to clear your history?')) {
+            saveHistory([]);
+            loadHistory();
+            showNotification('History cleared');
+        }
+    } catch (error) {
+        console.error('Error clearing history:', error);
+        showNotification('Failed to clear history', 'error');
+    }
+}
+
+// Helper function to get history from localStorage
+function getHistory() {
+    try {
+        const history = localStorage.getItem('remindersHistory');
+        return history ? JSON.parse(history) : [];
+    } catch (error) {
+        console.error('Error getting history:', error);
+        return [];
+    }
+}
+
+// Helper function to save history to localStorage
+function saveHistory(history) {
+    try {
+        localStorage.setItem('remindersHistory', JSON.stringify(history));
+    } catch (error) {
+        console.error('Error saving history:', error);
     }
 }
 
@@ -752,6 +957,7 @@ function addReminder(text, date, time, tag) {
             date: date,
             time: time,
             tag: tag,
+            completed: false, // Add completed flag
             createdAt: new Date().toISOString()
         };
         
@@ -781,11 +987,15 @@ function updateReminder(id, text, date, time, tag) {
         const index = reminders.findIndex(reminder => reminder.id == id);
         
         if (index !== -1) {
+            // Preserve the completion status
+            const completed = reminders[index].completed || false;
+            
             // Update the reminder
             reminders[index].text = text;
             reminders[index].date = date;
             reminders[index].time = time;
             reminders[index].tag = tag;
+            reminders[index].completed = completed;
             
             // Save to localStorage
             saveReminders(reminders);
@@ -796,6 +1006,39 @@ function updateReminder(id, text, date, time, tag) {
         }
     } catch (error) {
         console.error('Error updating reminder:', error);
+        showNotification('Failed to update reminder', 'error');
+    }
+}
+
+// Toggle completion status of a reminder
+function toggleReminderCompletion(id) {
+    try {
+        // Get existing reminders
+        const reminders = getReminders();
+        
+        // Find the reminder
+        const index = reminders.findIndex(reminder => reminder.id == id);
+        
+        if (index !== -1) {
+            // Toggle completed flag
+            reminders[index].completed = !reminders[index].completed;
+            
+            // If marked as completed, add to history
+            if (reminders[index].completed) {
+                addToHistory(reminders[index], 'completed');
+                showNotification('Reminder marked as completed');
+            } else {
+                showNotification('Reminder marked as incomplete');
+            }
+            
+            // Save to localStorage
+            saveReminders(reminders);
+            
+            // Reload reminders to update UI
+            loadReminders();
+        }
+    } catch (error) {
+        console.error('Error toggling reminder completion:', error);
         showNotification('Failed to update reminder', 'error');
     }
 }

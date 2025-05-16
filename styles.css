@@ -1,4 +1,118 @@
-/* Section headings */
+/* History log styles */
+#history-list {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #aaa;
+    font-size: 14px;
+}
+
+.dark-mode .history-item {
+    background-color: #3a3a3a;
+}
+
+.history-item.completed {
+    border-left-color: #2ecc71; /* Green */
+}
+
+.history-item.deleted {
+    border-left-color: #e74c3c; /* Red */
+}
+
+.history-icon {
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+.history-text {
+    flex: 1;
+}
+
+.history-time {
+    color: #777;
+    font-size: 12px;
+    margin-left: 15px;
+}
+
+.dark-mode .history-time {
+    color: #bbb;
+}
+
+/* Empty history state */
+#history-list:empty::after {
+    content: "No history yet. Completed and deleted reminders will appear here.";
+    display: block;
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-style: italic;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.dark-mode #history-list:empty::after {
+    background-color: #3a3a3a;
+    color: #bbb;
+}/* Quote of the day */
+.quote-container {
+    margin: 15px auto;
+    max-width: 80%;
+    text-align: center;
+    font-style: italic;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.dark-mode .quote-container {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+#quote-text {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #000;
+    position: relative;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.dark-mode #quote-text {
+    color: #fff;
+}
+
+#quote-text::before,
+#quote-text::after {
+    content: '"';
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#quote-author {
+    font-size: 14px;
+    color: #000;
+    font-weight: 600;
+    text-align: right;
+    margin-right: 20px;
+}
+
+.dark-mode #quote-author {
+    color: #ff8c00;
+}
+
+#quote-author::before {
+    content: "— ";
+}/* Section headings */
 .panel h3 {
     margin: 30px 0 15px 0;
     color: #444;
