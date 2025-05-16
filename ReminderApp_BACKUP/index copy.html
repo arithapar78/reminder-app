@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Reminder App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- App Header -->
+        <header class="app-header">
+            <h1>Simple Reminder App</h1>
+            <p id="date-display"></p>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+                <span class="toggle-icon">🏀</span>
+                <span class="toggle-text">Dark Mode</span>
+            </button>
+        </header>
+        
+        <!-- Add Reminder Form -->
+        <section class="panel" id="add-reminder-panel">
+            <h2>Add a Reminder</h2>
+            <form id="reminder-form">
+                <div class="form-group">
+                    <label for="reminder-text">Reminder</label>
+                    <input type="text" id="reminder-text" placeholder="What do you need to remember?" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="reminder-date">Date</label>
+                        <input type="date" id="reminder-date" required>
+                    </div>
+                    
+                    <div class="form-group half">
+                        <label for="reminder-time">Time</label>
+                        <input type="time" id="reminder-time" required>
+                    </div>
+                </div>
+                
+                <!-- Tags dropdown -->
+                <div class="form-group">
+                    <label for="reminder-tag">Tag</label>
+                    <select id="reminder-tag">
+                        <option value="">None</option>
+                        <option value="Work">Work</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Health">Health</option>
+                        <option value="Social">Social</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add Reminder</button>
+            </form>
+        </section>
+        
+        <!-- View Reminders -->
+        <section class="panel" id="view-reminders-panel">
+            <h2>My Reminders</h2>
+            
+            <!-- Search bar with title -->
+            <h3>Search</h3>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search reminders...">
+                <button id="search-btn" class="btn btn-secondary">Search</button>
+                <button id="clear-search-btn" class="btn btn-secondary">Clear</button>
+            </div>
+            
+            <!-- Filter by date with clear label -->
+            <h3>Show reminders for:</h3>
+            <div class="filter-controls">
+                <label for="filter-date">Date:</label>
+                <input type="date" id="filter-date">
+                <button id="filter-btn" class="btn btn-secondary">Filter</button>
+                <button id="show-all-btn" class="btn btn-secondary">Show All</button>
+            </div>
+            
+            <!-- Tag filter with clear title -->
+            <h3>Filter by tag:</h3>
+            <div class="tag-filter">
+                <div class="tag-buttons">
+                    <button class="tag-btn active" data-tag="all">All</button>
+                    <button class="tag-btn" data-tag="Work">Work</button>
+                    <button class="tag-btn" data-tag="Personal">Personal</button>
+                    <button class="tag-btn" data-tag="Urgent">Urgent</button>
+                    <button class="tag-btn" data-tag="Health">Health</button>
+                    <button class="tag-btn" data-tag="Social">Social</button>
+                </div>
+            </div>
+            
+            <div id="reminders-list">
+                <!-- Reminders will be added here dynamically -->
+            </div>
+        </section>
+        
+        <!-- Data Management -->
+        <section class="panel" id="data-panel">
+            <h2>Manage Data</h2>
+            <div class="button-group">
+                <button id="export-btn" class="btn btn-secondary">Export Reminders</button>
+                <button id="import-btn" class="btn btn-secondary">Import Reminders</button>
+                <button id="clear-btn" class="btn btn-danger">Clear All Reminders</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification hidden">
+        <p id="notification-message"></p>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
