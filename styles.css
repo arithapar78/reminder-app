@@ -1,4 +1,355 @@
-/* Basic CSS reset */
+/* Section headings */
+.panel h3 {
+    margin: 30px 0 15px 0;
+    color: #444;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    position: relative;
+}
+
+.dark-mode .panel h3 {
+    color: #ff8c00;
+}/* Reminders list */
+#reminders-list {
+    margin-top: 20px;
+    position: relative;
+}
+
+.reminder-item {
+    background-color: #fff;
+    border-left: 4px solid #ff8c00; /* Orange */
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.dark-mode .reminder-item {
+    background-color: #333;
+    border-left: 4px solid #ff8c00;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.reminder-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+}
+
+.reminder-item h3 {
+    margin-bottom: 15px;
+    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.dark-mode .reminder-item h3 {
+    color: #ff8c00; /* Orange in dark mode */
+}
+
+.reminder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+
+.reminder-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.reminder-meta {
+    display: flex;
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 14px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.dark-mode .reminder-meta {
+    color: #ccc;
+}
+
+.reminder-meta span {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.reminder-meta span::before {
+    content: "🏀";
+    margin-right: 5px;
+}
+
+/* Countdown timer */
+.countdown {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-left: auto;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.dark-mode .countdown {
+    background-color: #444;
+    color: #fff;
+}
+
+.countdown.soon {
+    background-color: #ffeaa7;
+    color: #d35400;
+}
+
+.countdown.imminent {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.countdown.overdue {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.dark-mode .countdown.soon {
+    background-color: #d35400;
+    color: #ffeaa7;
+}
+
+.dark-mode .countdown.imminent {
+    background-color: #721c24;
+    color: #f8d7da;
+}
+
+.dark-mode .countdown.overdue {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.reminder-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    position: relative;
+}
+
+.edit-btn, .delete-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background-color: #333;
+    color: #fff;
+}
+
+.dark-mode .edit-btn {
+    background-color: #444;
+}
+
+.edit-btn:hover {
+    background-color: #222;
+    transform: translateY(-2px);
+}
+
+.dark-mode .edit-btn:hover {
+    background-color: #555;
+}
+
+.delete-btn {
+    background-color: #e74c3c; /* Red */
+    color: #fff;
+}
+
+.dark-mode .delete-btn {
+    background-color: #c0392b;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+.dark-mode .delete-btn:hover {
+    background-color: #e74c3c;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 30px;
+    color: #666;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    border: 2px dashed #ddd;
+    font-style: italic;
+    font-family: 'Montserrat', sans-serif;
+    position: relative;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.dark-mode .empty-state {
+    color: #ccc;
+    background-color: #333;
+    border: 2px dashed #444;
+}
+
+/* Basketball icon for empty state */
+.empty-state::before {
+    content: "🏀";
+    display: block;
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ff8c00; /* Orange */
+    color: #000;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-left: 6px solid #000; /* Black border */
+}
+
+.dark-mode .notification {
+    background-color: #000; /* Black in dark mode */
+    color: #ff8c00; /* Orange text */
+    border-left: 6px solid #ff8c00; /* Orange border */
+}
+
+.notification.error {
+    background-color: #e74c3c; /* Red */
+    color: #fff;
+    border-left: 6px solid #c0392b;
+}
+
+.dark-mode .notification.error {
+    background-color: #c0392b;
+    border-left: 6px solid #e74c3c;
+}
+
+.notification.warning {
+    background-color: #f39c12; /* Yellow */
+    color: #000;
+    border-left: 6px solid #e67e22;
+}
+
+.dark-mode .notification.warning {
+    background-color: #e67e22;
+    border-left: 6px solid #f39c12;
+    color: #000;
+}
+
+.notification::before {
+    content: "🏀";
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.notification.hidden {
+    opacity: 0;
+    transform: translateY(30px);
+    visibility: hidden;
+}
+
+/* Filter controls */
+.filter-controls {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.dark-mode .filter-controls {
+    background-color: #2a2a2a;
+}
+
+/* Button group */
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-controls, 
+    .search-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-controls input,
+    .filter-controls button,
+    .search-container input,
+    .search-container button {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .app-header h1 {
+        font-size: 32px;
+    }
+    
+    .app-header {
+        padding: 20px 15px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .reminder-header {
+        flex-direction: column;
+    }
+    
+    .countdown {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}/* Basic CSS reset */
 * {
     margin: 0;
     padding: 0;
@@ -9,28 +360,19 @@
 body {
     font-family: 'Roboto Condensed', Arial, sans-serif;
     line-height: 1.6;
-    background-color: #f5f5f5;
+    background-color: #ff7b00; /* Vibrant basketball orange */
+    background-image: linear-gradient(135deg, #ff7b00, #ff9f45);
     color: #333;
     padding: 20px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    /* Basketball texture pattern for light mode */
-    background-image: 
-        radial-gradient(circle, rgba(0,0,0,0.05) 2px, transparent 2px),
-        radial-gradient(circle, rgba(0,0,0,0.05) 2px, transparent 2px);
-    background-size: 40px 40px;
-    background-position: 0 0, 20px 20px;
+    transition: background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
+    min-height: 100vh;
 }
 
-/* Dark mode colors with basketball texture */
+/* Dark mode colors with solid background */
 body.dark-mode {
-    background-color: #1a1a1a;
+    background-color: #202020; /* Dark charcoal */
+    background-image: linear-gradient(135deg, #202020, #333333);
     color: #f5f5f5;
-    /* Basketball texture pattern for dark mode */
-    background-image: 
-        radial-gradient(circle, rgba(255,255,255,0.05) 2px, transparent 2px),
-        radial-gradient(circle, rgba(255,255,255,0.05) 2px, transparent 2px);
-    background-size: 40px 40px;
-    background-position: 0 0, 20px 20px;
 }
 
 /* Theme toggle button */
@@ -71,7 +413,6 @@ body.dark-mode {
 .container {
     max-width: 800px;
     margin: 0 auto;
-    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z' fill='%23ff8c00' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
 }
 
 /* Header */
@@ -540,4 +881,4 @@ input[type="time"] {
         margin-right: 0;
         margin-bottom: 10px;
     }
-}	
+}
